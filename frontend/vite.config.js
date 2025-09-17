@@ -22,8 +22,8 @@ export default defineConfig({
       "/api": {
         target: "https://barshop-backend.vercel.app",
         changeOrigin: true,
-        secure: false,
-        rewrite: (path) => path.replace(/^\/api/, ""),
+        secure: true,
+        rewrite: (path) => path.replace(/^\/api/, "/api"),
       },
     },
   },
