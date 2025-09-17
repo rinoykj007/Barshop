@@ -1,20 +1,26 @@
 import { defineConfig } from "vite";
 import react from "@vitejs/plugin-react";
+import path from "path";
 
-// https://vitejs.dev/config/
 export default defineConfig({
   plugins: [react()],
-  base: '/',
-  define: {
-    'process.env': {}
+  base: "/",
+  resolve: {
+    alias: {
+      "@": path.resolve(__dirname, "./src"),
+    },
   },
   server: {
     port: 3000,
     strictPort: true,
     host: true,
+    hmr: {
+      host: "localhost",
+      protocol: "ws",
+    },
     proxy: {
-      '/api': {
-        target: 'https://barshop-backend.vercel.app',
+      "/api": {
+        target: "https://barshop-backend.vercel.app",
         changeOrigin: true,
         secure: false,
         rewrite: (path) => path.replace(/^\/api/, ""),
@@ -24,5 +30,10 @@ export default defineConfig({
   build: {
     outDir: "dist",
     sourcemap: true,
+    rollupOptions: {
+      input: {
+        main: path.resolve(__dirname, "index.html"),
+      },
+    },
   },
 });
