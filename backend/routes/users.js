@@ -101,7 +101,7 @@ router.get("/admin/status", async (req, res) => {
 // POST create initial admin user (only if no user exists)
 router.post("/admin/initialize", async (req, res) => {
   try {
-    const { name, email } = req.body;
+    const { name, email, password } = req.body;
 
     // Check if ANY user already exists
     const existingUser = await User.findOne({});
@@ -113,16 +113,25 @@ router.post("/admin/initialize", async (req, res) => {
     }
 
     // Validate required fields
-    if (!name || !email) {
+    if (!name || !email || !password) {
       return res.status(400).json({
         success: false,
-        message: "Name and email are required for admin user",
+        message: "Name, email, and password are required for admin user",
+      });
+    }
+
+    // Validate password length
+    if (password.length < 6) {
+      return res.status(400).json({
+        success: false,
+        message: "Password must be at least 6 characters long",
       });
     }
 
     const adminUser = new User({
       name,
       email,
+      password,
       role: "admin",
     });
 
