@@ -9,12 +9,12 @@ const PORT = process.env.PORT || 5000;
 // CORS configuration
 const corsOptions = {
   origin: [
-    'https://barshop-rho.vercel.app', // Your Vercel frontend URL
-    'http://localhost:5173', // Local development
-    'http://localhost:3000' // Alternative local port
+    "https://barshop-rho.vercel.app", // Your Vercel frontend URL
+    "http://localhost:5173", // Local development
+    "http://localhost:3000", // Alternative local port
   ],
   credentials: true,
-  optionsSuccessStatus: 200
+  optionsSuccessStatus: 200,
 };
 
 // Middleware
@@ -84,7 +84,12 @@ process.on("SIGINT", async () => {
   process.exit(0);
 });
 
-// Start server
-app.listen(PORT, () => {
-  console.log(`Server is running on port ${PORT}`);
-});
+// For local development
+if (process.env.NODE_ENV !== "production") {
+  app.listen(PORT, () => {
+    console.log(`Server is running on port ${PORT}`);
+  });
+}
+
+// Export for Vercel
+module.exports = app;
