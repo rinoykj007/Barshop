@@ -7,6 +7,7 @@ const API_BASE_URL =
 
 console.log("API Base URL:", API_BASE_URL);
 console.log("Environment:", import.meta.env.MODE);
+console.log("Build timestamp:", new Date().toISOString()); // Force new build
 
 const api = axios.create({
   baseURL: API_BASE_URL,
