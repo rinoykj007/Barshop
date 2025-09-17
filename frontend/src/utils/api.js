@@ -10,11 +10,11 @@ console.log("Environment:", import.meta.env.MODE);
 
 const api = axios.create({
   baseURL: API_BASE_URL,
-  timeout: 10000,
+  timeout: 30000, // Increased timeout for Vercel cold starts
   headers: {
     "Content-Type": "application/json",
   },
-  withCredentials: true, // Important for cookies if using session-based auth
+  // withCredentials: true, // Temporarily disabled for CORS troubleshooting
 });
 
 // Request interceptor
