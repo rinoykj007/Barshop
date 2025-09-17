@@ -42,8 +42,12 @@ const BookAppointment = () => {
 
     try {
       console.log(`Fetching available time slots for date: ${date}`);
+      console.log(`Date type: ${typeof date}, Date value: ${date}`);
       const response = await appointmentAPI.getAvailableTimeSlots(date);
-      console.log("API Response:", response);
+      console.log("Full API Response:", response);
+      console.log("Response success:", response.success);
+      console.log("Available slots count:", response.availableSlots?.length);
+      console.log("Available slots:", response.availableSlots);
 
       if (response.success) {
         setAvailableTimeSlots(response.availableSlots || []);
@@ -57,6 +61,11 @@ const BookAppointment = () => {
       }
     } catch (error) {
       console.error("Error fetching available time slots:", error);
+      console.error("Error details:", {
+        message: error.message,
+        response: error.response?.data,
+        status: error.response?.status
+      });
       setMessage(
         `Error loading available time slots: ${
           error.message || "Please try again"

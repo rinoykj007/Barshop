@@ -76,16 +76,31 @@ app.use(express.urlencoded({ extended: true }));
 const connectDB = async () => {
   try {
     const mongoURI = process.env.MONGODB_URI;
+    
+    if (!mongoURI) {
+      throw new Error("MONGODB_URI environment variable is not set");
+    }
 
+    console.log("Attempting to connect to MongoDB...");
+    console.log("MongoDB URI configured:", mongoURI ? "Yes" : "No");
+    
     await mongoose.connect(mongoURI, {
       useNewUrlParser: true,
       useUnifiedTopology: true,
+      serverSelectionTimeoutMS: 30000, // Increase timeout for Vercel
+      socketTimeoutMS: 45000,
+      bufferMaxEntries: 0, // Disable mongoose buffering
+      maxPoolSize: 10, // Maintain up to 10 socket connections
     });
 
     console.log("MongoDB connected successfully");
   } catch (error) {
     console.error("MongoDB connection error:", error.message);
-    process.exit(1);
+    console.error("Full error:", error);
+    // Don't exit in serverless environment
+    if (process.env.NODE_ENV !== "production") {
+      process.exit(1);
+    }
   }
 };
 
