@@ -6,8 +6,19 @@ require("dotenv").config();
 const app = express();
 const PORT = process.env.PORT || 5000;
 
+// CORS configuration
+const corsOptions = {
+  origin: [
+    'https://barshop-rho.vercel.app', // Your Vercel frontend URL
+    'http://localhost:5173', // Local development
+    'http://localhost:3000' // Alternative local port
+  ],
+  credentials: true,
+  optionsSuccessStatus: 200
+};
+
 // Middleware
-app.use(cors());
+app.use(cors(corsOptions));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 

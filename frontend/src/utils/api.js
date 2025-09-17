@@ -1,12 +1,16 @@
 import axios from "axios";
 
 // Create axios instance with base configuration
+// Use environment variable for API base URL with fallback to local development
+const API_BASE_URL = process.env.REACT_APP_API_URL || "/api";
+
 const api = axios.create({
-  baseURL: "/api",
+  baseURL: API_BASE_URL,
   timeout: 10000,
   headers: {
     "Content-Type": "application/json",
   },
+  withCredentials: true, // Important for cookies if using session-based auth
 });
 
 // Request interceptor
