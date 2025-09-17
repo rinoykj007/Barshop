@@ -85,11 +85,8 @@ const connectDB = async () => {
     console.log("MongoDB URI configured:", mongoURI ? "Yes" : "No");
 
     await mongoose.connect(mongoURI, {
-      useNewUrlParser: true,
-      useUnifiedTopology: true,
       serverSelectionTimeoutMS: 30000, // Increase timeout for Vercel
       socketTimeoutMS: 45000,
-      bufferMaxEntries: 0, // Disable mongoose buffering
       maxPoolSize: 10, // Maintain up to 10 socket connections
     });
 

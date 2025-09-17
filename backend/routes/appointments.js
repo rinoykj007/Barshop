@@ -47,7 +47,7 @@ router.get("/available/:date", async (req, res) => {
     }
 
     // Check MongoDB connection status
-    const mongoose = require('mongoose');
+    const mongoose = require("mongoose");
     if (mongoose.connection.readyState !== 1) {
       console.log("MongoDB not connected, returning mock data for development");
       // Return mock data when MongoDB is not connected
@@ -67,14 +67,14 @@ router.get("/available/:date", async (req, res) => {
           mockTimeSlots.push({ value: timeString, display: displayTime });
         }
       }
-      
+
       return res.json({
         success: true,
         date: date,
         availableSlots: mockTimeSlots,
         bookedSlots: [],
         totalSlots: mockTimeSlots.length,
-        note: "Mock data - MongoDB not connected. Please set MONGODB_URI in Vercel environment variables."
+        note: "Mock data - MongoDB not connected. Please set MONGODB_URI in Vercel environment variables.",
       });
     }
 
@@ -185,6 +185,11 @@ router.get("/:id", async (req, res) => {
 // POST create new appointment
 router.post("/", async (req, res) => {
   try {
+    console.log(
+      "Creating appointment - MongoDB connection state:",
+      require("mongoose").connection.readyState
+    );
+
     const { customerName, customerPhone, appointmentDateTime, notes } =
       req.body;
 
@@ -196,12 +201,28 @@ router.post("/", async (req, res) => {
       });
     }
 
+    console.log("Checking for existing appointment at:", appointmentDateTime);
+
     // Check if the time slot is already booked by a scheduled appointment
     const requestedDateTime = new Date(appointmentDateTime);
-    const existingAppointment = await Appointment.findOne({
-      appointmentDateTime: requestedDateTime,
-      status: "scheduled", // Only consider scheduled appointments as conflicts
-    });
+
+    // Add timeout to the MongoDB query
+    const existingAppointment = await Promise.race([
+      Appointment.findOne({
+        appointmentDateTime: requestedDateTime,
+        status: "scheduled", // Only consider scheduled appointments as conflicts
+      })
+        .lean()
+        .maxTimeMS(5000), // 5 second timeout
+      new Promise((_, reject) =>
+        setTimeout(
+          () => reject(new Error("Query timeout after 5 seconds")),
+          5000
+        )
+      ),
+    ]);
+
+    console.log("Existing appointment check completed:", !!existingAppointment);
 
     if (existingAppointment) {
       return res.status(409).json({
