@@ -8,11 +8,27 @@ const PORT = process.env.PORT || 5000;
 
 // CORS configuration
 const corsOptions = {
-  origin: [
-    "https://barshop-rho.vercel.app", // Your Vercel frontend URL
-    "http://localhost:5173", // Local development
-    "http://localhost:3000", // Alternative local port
-  ],
+  origin: function (origin, callback) {
+    // Allow requests with no origin (like mobile apps or curl requests)
+    if (!origin) return callback(null, true);
+
+    const allowedOrigins = [
+      "https://barshopfd.vercel.app", // Your actual Vercel frontend URL
+      "https://barshop-rho.vercel.app", // Alternative frontend URL (if any)
+      "http://localhost:5173", // Local development (Vite)
+      "http://localhost:3000", // Alternative local port
+    ];
+
+    // Allow any *.vercel.app domain for development
+    const isVercelDomain = origin.endsWith(".vercel.app");
+    const isAllowedOrigin = allowedOrigins.includes(origin);
+
+    if (isAllowedOrigin || isVercelDomain) {
+      callback(null, true);
+    } else {
+      callback(new Error("Not allowed by CORS"));
+    }
+  },
   credentials: true,
   optionsSuccessStatus: 200,
 };
