@@ -46,6 +46,38 @@ router.get("/available/:date", async (req, res) => {
       });
     }
 
+    // Check MongoDB connection status
+    const mongoose = require('mongoose');
+    if (mongoose.connection.readyState !== 1) {
+      console.log("MongoDB not connected, returning mock data for development");
+      // Return mock data when MongoDB is not connected
+      const mockTimeSlots = [];
+      for (let hour = 9; hour < 19; hour++) {
+        for (let minute = 0; minute < 60; minute += 30) {
+          const timeString = `${hour.toString().padStart(2, "0")}:${minute
+            .toString()
+            .padStart(2, "0")}`;
+          const displayTime = new Date(
+            `2000-01-01T${timeString}`
+          ).toLocaleTimeString("en-US", {
+            hour: "numeric",
+            minute: "2-digit",
+            hour12: true,
+          });
+          mockTimeSlots.push({ value: timeString, display: displayTime });
+        }
+      }
+      
+      return res.json({
+        success: true,
+        date: date,
+        availableSlots: mockTimeSlots,
+        bookedSlots: [],
+        totalSlots: mockTimeSlots.length,
+        note: "Mock data - MongoDB not connected. Please set MONGODB_URI in Vercel environment variables."
+      });
+    }
+
     // Generate all possible time slots (9:00 AM to 7:00 PM, 30-minute intervals)
     const allTimeSlots = [];
     for (let hour = 9; hour < 19; hour++) {
