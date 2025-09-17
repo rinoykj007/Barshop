@@ -76,14 +76,14 @@ app.use(express.urlencoded({ extended: true }));
 const connectDB = async () => {
   try {
     const mongoURI = process.env.MONGODB_URI;
-    
+
     if (!mongoURI) {
       throw new Error("MONGODB_URI environment variable is not set");
     }
 
     console.log("Attempting to connect to MongoDB...");
     console.log("MongoDB URI configured:", mongoURI ? "Yes" : "No");
-    
+
     await mongoose.connect(mongoURI, {
       useNewUrlParser: true,
       useUnifiedTopology: true,

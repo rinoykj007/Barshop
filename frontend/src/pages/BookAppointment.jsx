@@ -64,7 +64,7 @@ const BookAppointment = () => {
       console.error("Error details:", {
         message: error.message,
         response: error.response?.data,
-        status: error.response?.status
+        status: error.response?.status,
       });
       setMessage(
         `Error loading available time slots: ${
