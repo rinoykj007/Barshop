@@ -1,5 +1,6 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
+import { settingsAPI } from '../utils/api';
 
 const services = [
   {
@@ -37,25 +38,91 @@ const services = [
 ];
 
 const Home = () => {
+  const [upcomingOffDates, setUpcomingOffDates] = useState([]);
+  const [isShopClosed, setIsShopClosed] = useState(false);
+
+  useEffect(() => {
+    fetchOffDates();
+  }, []);
+
+  const fetchOffDates = async () => {
+    try {
+      const response = await settingsAPI.getSettings();
+      const offDates = response.data.offDates || [];
+
+      // Check if today is an off date
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+      const isClosed = offDates.some(date => {
+        const offDate = new Date(date);
+        offDate.setHours(0, 0, 0, 0);
+        return offDate.getTime() === today.getTime();
+      });
+      setIsShopClosed(isClosed);
+
+      // Filter only upcoming off dates
+      const upcoming = offDates.filter(date => {
+        const offDate = new Date(date);
+        const checkDate = new Date();
+        checkDate.setHours(0, 0, 0, 0);
+        return offDate >= checkDate;
+      }).sort((a, b) => new Date(a) - new Date(b));
+
+      setUpcomingOffDates(upcoming.slice(0, 3)); // Show max 3 upcoming dates
+    } catch (error) {
+      console.error('Error fetching off dates:', error);
+    }
+  };
+
+  const formatOffDate = (dateString) => {
+    return new Date(dateString).toLocaleDateString('en-IE', {
+      weekday: 'long',
+      month: 'long',
+      day: 'numeric',
+    });
+  };
+
   return (
     <div className="min-h-screen bg-white">
       {/* Hero Section */}
       <section className="relative bg-gray-900 text-white overflow-hidden min-h-screen flex items-center">
         <div className="absolute inset-0">
           <div className="absolute inset-0 bg-gradient-to-b from-black/60 to-black/80"></div>
-          <img 
-            src="https://images.unsplash.com/photo-1519501025264-65ba15a82390?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1470&q=80" 
+          <img
+            src="https://images.unsplash.com/photo-1519501025264-65ba15a82390?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1470&q=80"
             alt="Barbershop interior"
             className="w-full h-full object-cover object-center"
           />
         </div>
-        
+
         <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-32 text-center w-full">
           <div className="mb-8">
             <span className="inline-block bg-amber-500/20 text-amber-400 px-4 py-2 rounded-full text-sm font-medium mb-6">
               PREMIUM BARBERSHOP IN DUBLIN
             </span>
           </div>
+
+          {/* Off Dates Notice */}
+          {upcomingOffDates.length > 0 && (
+            <div className="mb-8 max-w-2xl mx-auto">
+              <div className="bg-red-500/20 backdrop-blur-sm border-2 border-red-400/50 rounded-xl p-4 animate-pulse">
+                <div className="flex items-center justify-center space-x-2 mb-2">
+                  <svg className="w-5 h-5 text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                  </svg>
+                  <span className="text-red-400 font-bold text-lg">Shop Closed</span>
+                </div>
+                <div className="space-y-1">
+                  {upcomingOffDates.map((date, index) => (
+                    <p key={index} className="text-red-200 text-sm">
+                      {formatOffDate(date)}
+                    </p>
+                  ))}
+                </div>
+              </div>
+            </div>
+          )}
+
           <h1 className="text-5xl md:text-7xl font-bold mb-6 leading-tight">
             The Art of <span className="text-amber-400">Grooming</span>
           </h1>
@@ -63,17 +130,29 @@ const Home = () => {
             Experience the perfect blend of traditional barbering and contemporary style in the heart of Dublin.
           </p>
           <div className="flex flex-col sm:flex-row justify-center gap-4">
-            <Link 
-              to="/book" 
-              className="inline-flex items-center justify-center bg-amber-500 hover:bg-amber-600 text-white font-medium py-4 px-10 rounded-full text-lg transition-all duration-300 transform hover:scale-105 shadow-lg hover:shadow-amber-500/30"
-            >
-              Book Appointment
-              <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 ml-2" viewBox="0 0 20 20" fill="currentColor">
-                <path fillRule="evenodd" d="M10.293 5.293a1 1 0 011.414 0l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414-1.414L12.586 11H5a1 1 0 110-2h7.586l-2.293-2.293a1 1 0 010-1.414z" clipRule="evenodd" />
-              </svg>
-            </Link>
-            <Link 
-              to="/services" 
+            {isShopClosed ? (
+              <button
+                disabled
+                className="inline-flex items-center justify-center bg-gray-500 text-gray-300 font-medium py-4 px-10 rounded-full text-lg cursor-not-allowed opacity-60"
+              >
+                <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-2" viewBox="0 0 20 20" fill="currentColor">
+                  <path fillRule="evenodd" d="M13.477 14.89A6 6 0 015.11 6.524l8.367 8.368zm1.414-1.414L6.524 5.11a6 6 0 018.367 8.367zM18 10a8 8 0 11-16 0 8 8 0 0116 0z" clipRule="evenodd" />
+                </svg>
+                Shop Closed Today
+              </button>
+            ) : (
+              <Link
+                to="/book"
+                className="inline-flex items-center justify-center bg-amber-500 hover:bg-amber-600 text-white font-medium py-4 px-10 rounded-full text-lg transition-all duration-300 transform hover:scale-105 shadow-lg hover:shadow-amber-500/30"
+              >
+                Book Appointment
+                <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 ml-2" viewBox="0 0 20 20" fill="currentColor">
+                  <path fillRule="evenodd" d="M10.293 5.293a1 1 0 011.414 0l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414-1.414L12.586 11H5a1 1 0 110-2h7.586l-2.293-2.293a1 1 0 010-1.414z" clipRule="evenodd" />
+                </svg>
+              </Link>
+            )}
+            <Link
+              to="/services"
               className="inline-flex items-center justify-center border-2 border-white/30 hover:border-white/50 text-white font-medium py-4 px-10 rounded-full text-lg transition-all duration-300 hover:bg-white/5"
             >
               Explore Services
@@ -198,17 +277,29 @@ const Home = () => {
             Experience the perfect blend of traditional barbering and modern style. Your best look starts here.
           </p>
           <div className="flex flex-col sm:flex-row justify-center gap-4">
-            <Link 
-              to="/book" 
-              className="inline-flex items-center justify-center bg-amber-500 hover:bg-amber-600 text-white font-medium py-4 px-10 rounded-full text-lg transition-all duration-300 transform hover:scale-105 shadow-lg hover:shadow-amber-500/30"
-            >
-              Book Now
-              <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 ml-2" viewBox="0 0 20 20" fill="currentColor">
-                <path fillRule="evenodd" d="M10.293 5.293a1 1 0 011.414 0l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414-1.414L12.586 11H5a1 1 0 110-2h7.586l-2.293-2.293a1 1 0 010-1.414z" clipRule="evenodd" />
-              </svg>
-            </Link>
-            <a 
-              href="tel:+3531234567" 
+            {isShopClosed ? (
+              <button
+                disabled
+                className="inline-flex items-center justify-center bg-gray-500 text-gray-300 font-medium py-4 px-10 rounded-full text-lg cursor-not-allowed opacity-60"
+              >
+                <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-2" viewBox="0 0 20 20" fill="currentColor">
+                  <path fillRule="evenodd" d="M13.477 14.89A6 6 0 015.11 6.524l8.367 8.368zm1.414-1.414L6.524 5.11a6 6 0 018.367 8.367zM18 10a8 8 0 11-16 0 8 8 0 0116 0z" clipRule="evenodd" />
+                </svg>
+                Shop Closed Today
+              </button>
+            ) : (
+              <Link
+                to="/book"
+                className="inline-flex items-center justify-center bg-amber-500 hover:bg-amber-600 text-white font-medium py-4 px-10 rounded-full text-lg transition-all duration-300 transform hover:scale-105 shadow-lg hover:shadow-amber-500/30"
+              >
+                Book Now
+                <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 ml-2" viewBox="0 0 20 20" fill="currentColor">
+                  <path fillRule="evenodd" d="M10.293 5.293a1 1 0 011.414 0l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414-1.414L12.586 11H5a1 1 0 110-2h7.586l-2.293-2.293a1 1 0 010-1.414z" clipRule="evenodd" />
+                </svg>
+              </Link>
+            )}
+            <a
+              href="tel:+3531234567"
               className="inline-flex items-center justify-center border-2 border-white/30 hover:border-white/50 text-white font-medium py-4 px-10 rounded-full text-lg transition-all duration-300 hover:bg-white/5"
             >
               <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-2" viewBox="0 0 20 20" fill="currentColor">

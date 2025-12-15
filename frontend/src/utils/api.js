@@ -67,4 +67,12 @@ export const appointmentAPI = {
   getPaymentStatus: () => api.get("/appointments/payments/status"),
 };
 
+// Settings API functions
+export const settingsAPI = {
+  getSettings: () => api.get("/settings"),
+  addOffDate: (date) => api.post("/settings/off-date", { date }),
+  removeOffDate: (date) => api.delete("/settings/off-date", { data: { date } }),
+  updateSettings: (settings) => api.put("/settings", settings),
+};
+
 export default api;

@@ -6,6 +6,8 @@ import ProtectedRoute from "./components/ProtectedRoute";
 import Home from "./pages/Home";
 import AdminDashboard from "./pages/AdminDashboard";
 import BookAppointment from "./pages/BookAppointment";
+import ScheduledAppointments from "./pages/ScheduledAppointments";
+import CompletedAppointments from "./pages/CompletedAppointments";
 
 function App() {
   return (
@@ -20,6 +22,22 @@ function App() {
               element={
                 <ProtectedRoute>
                   <AdminDashboard />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/admin/scheduled"
+              element={
+                <ProtectedRoute>
+                  <ScheduledAppointments />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/admin/completed"
+              element={
+                <ProtectedRoute>
+                  <CompletedAppointments />
                 </ProtectedRoute>
               }
             />

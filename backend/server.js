@@ -107,6 +107,7 @@ connectDB();
 // Import routes
 const userRoutes = require("./routes/users");
 const appointmentRoutes = require("./routes/appointments");
+const settingsRoutes = require("./routes/settings");
 
 // Basic routes
 app.get("/", (req, res) => {
@@ -125,6 +126,7 @@ app.get("/api/health", (req, res) => {
 // API routes
 app.use("/api/users", userRoutes);
 app.use("/api/appointments", appointmentRoutes);
+app.use("/api/settings", settingsRoutes);
 
 // Handle MongoDB connection events
 mongoose.connection.on("connected", () => {
